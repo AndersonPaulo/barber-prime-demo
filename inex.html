@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Barber Prime — Apresentação v2</title>
+<style>
+  :root{
+    --bg:#09090b; --surface:#18181b; --surface2:#111113; --border:#27272a;
+    --amber:#F59E0B; --amber-soft:rgba(245,158,11,.10); --amber-bd:rgba(245,158,11,.30);
+    --txt:#ffffff; --txt2:#a1a1aa; --txt3:#71717a; --txt4:#52525b;
+    --emerald:#34d399; --rose:#fb7185; --blue:#60a5fa;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:var(--font);
+    background:
+      radial-gradient(900px 500px at 50% -10%, #1a1407 0%, transparent 60%),
+      radial-gradient(700px 600px at 100% 100%, #0b0f17 0%, transparent 55%),
+      #050506;
+    color:var(--txt); min-height:100vh;
+    display:flex; flex-direction:column; align-items:center;
+    padding:32px 16px 60px;
+  }
+  .page-head{ text-align:center; margin-bottom:26px; }
+  .brand-badge{
+    display:inline-flex; align-items:center; gap:10px; padding:6px 14px;
+    border:1px solid var(--border); border-radius:999px; background:rgba(255,255,255,.02); margin-bottom:14px;
+  }
+  .brand-badge .dot{ width:8px; height:8px; border-radius:50%; background:var(--amber); box-shadow:0 0 12px var(--amber); }
+  .brand-badge span{ font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--txt2); }
+  .page-head h1{ font-size:30px; font-weight:800; letter-spacing:-.02em; }
+  .page-head h1 b{ color:var(--amber); }
+  .page-head p{ color:var(--txt3); font-size:13px; margin-top:8px; }
+
+  .controls{ display:flex; flex-direction:column; align-items:center; gap:12px; margin-bottom:22px; }
+  .role-row{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+  .role-btn{
+    background:var(--surface); border:1px solid var(--border); border-radius:12px;
+    padding:9px 18px; font-size:13px; font-weight:600; color:var(--txt2);
+    cursor:pointer; transition:all .15s; font-family:var(--font);
+  }
+  .role-btn:hover{ border-color:#3f3f46; color:var(--txt); }
+  .role-btn.on-login{ background:#1c1c20; color:var(--txt); border-color:#3f3f46; }
+  .role-btn.on-super{ background:#0d1a14; color:var(--emerald); border-color:#14432e; }
+  .role-btn.on-owner{ background:#1a1407; color:var(--amber); border-color:#3d3008; }
+  .role-btn.on-barber{ background:#0d1a2a; color:var(--blue); border-color:#1e3a5f; }
+
+  .screen-row{ display:flex; gap:6px; flex-wrap:wrap; justify-content:center; min-height:30px; }
+  .nav-btn{
+    background:var(--surface2); border:1px solid var(--border); border-radius:10px;
+    padding:6px 13px; font-size:11.5px; color:var(--txt3); cursor:pointer; transition:all .15s; font-family:var(--font);
+  }
+  .nav-btn:hover{ color:var(--txt2); }
+  .nav-btn.active{ background:#1a1407; color:var(--amber); border-color:#3d3008; }
+  .nav-btn.active-blue{ background:#0d1a2a; color:var(--blue); border-color:#1e3a5f; }
+  .nav-btn.active-green{ background:#0d1a14; color:var(--emerald); border-color:#14432e; }
+
+  .phone{
+    width:330px; height:680px; background:var(--bg); border-radius:40px; border:8px solid #1c1c1f;
+    box-shadow:0 0 0 1px #3f3f46, 0 40px 80px -20px rgba(0,0,0,.8); overflow:hidden; position:relative;
+  }
+  .notch{ position:absolute; top:0; left:50%; transform:translateX(-50%); width:120px; height:24px; background:#1c1c1f; border-radius:0 0 16px 16px; z-index:30; }
+  .screen-area{ position:absolute; inset:0; overflow:hidden; }
+  .scroll{ position:absolute; inset:0; overflow-y:auto; padding:46px 18px 90px; }
+  .scroll::-webkit-scrollbar{ width:0; }
+  .screen{ display:none; }
+  .screen.active{ display:block; animation:fade .25s ease; }
+  @keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
+
+  .h-title{ font-size:22px; font-weight:800; letter-spacing:-.01em; }
+  .label-up{ font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--txt2); }
+  .card{ background:var(--surface2); border:1px solid var(--border); border-radius:16px; }
+  .row-between{ display:flex; justify-content:space-between; align-items:center; }
+  .mini-btn{ background:#1c1c20; color:var(--txt2); font-size:11px; padding:7px 11px; border-radius:9px; border:none; cursor:pointer; font-family:var(--font); }
+  .pill{ font-size:10.5px; font-weight:700; padding:4px 9px; border-radius:9px; }
+
+  .kpi-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .kpi{ background:var(--surface2); border:1px solid var(--border); border-radius:16px; padding:13px; }
+  .kpi .k-l{ font-size:10.5px; color:var(--txt2); }
+  .kpi .k-v{ font-size:19px; font-weight:800; margin-top:5px; }
+  .kpi .k-d{ font-size:10.5px; color:var(--emerald); margin-top:4px; }
+
+  .bars{ display:flex; align-items:flex-end; gap:8px; height:120px; padding:8px 2px 0; }
+  .bar{ flex:1; background:linear-gradient(180deg, var(--amber), #b45309); border-radius:5px 5px 2px 2px; opacity:.85; }
+  .bar-lbls{ display:flex; gap:8px; margin-top:7px; }
+  .bar-lbls span{ flex:1; text-align:center; font-size:9px; color:var(--txt4); }
+
+  .tabbar{
+    position:absolute; left:0; right:0; bottom:0; height:64px; z-index:20;
+    background:var(--bg); border-top:1px solid var(--border); display:flex; padding-bottom:8px;
+  }
+  .tab{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; cursor:pointer; }
+  .tab svg{ width:21px; height:21px; }
+  .tab span{ font-size:10px; }
+  .tab.amber, .tab.amber span{ color:var(--amber); }
+  .tab.dim, .tab.dim span{ color:var(--txt3); }
+
+  .avatar{ width:46px; height:46px; border-radius:50%; background:var(--amber-soft); display:flex; align-items:center; justify-content:center; color:var(--amber); font-weight:800; font-size:17px; }
+  .chip{ padding:7px 13px; border-radius:9px; font-size:11px; font-weight:600; cursor:pointer; white-space:nowrap; }
+  .chip.on{ background:var(--amber); color:#09090b; }
+  .chip.off{ background:var(--surface2); border:1px solid var(--border); color:var(--txt2); }
+  .period-btn{ flex:1; text-align:center; padding:8px; border-radius:11px; font-size:12px; font-weight:600; color:var(--txt2); cursor:pointer; }
+  .period-btn.active{ background:var(--amber); color:#09090b; }
+  .action-btn{ width:100%; border:none; border-radius:14px; padding:15px; font-size:15px; font-weight:800; cursor:pointer; font-family:var(--font); }
+
+  .footnote{ color:var(--txt4); font-size:12px; margin-top:26px; text-align:center; max-width:360px; line-height:1.6; }
+</style>
+</head>
+<body>
+
+  <div class="page-head">
+    <div class="brand-badge"><span class="dot"></span><span>Barber Prime · White Label</span></div>
+    <h1>Demonstração do <b>App</b></h1>
+    <p>Selecione o perfil e navegue pelas telas como no app real.</p>
+  </div>
+
+  <div class="controls">
+    <div class="role-row">
+      <button class="role-btn" id="rb-login"  onclick="setRole('login')">Login</button>
+      <button class="role-btn" id="rb-super"  onclick="setRole('super')">SaaS (Admin)</button>
+      <button class="role-btn" id="rb-owner"  onclick="setRole('owner')">Barbearia</button>
+      <button class="role-btn" id="rb-barber" onclick="setRole('barber')">Barbeiro</button>
+    </div>
+    <div class="screen-row" id="screen-row"></div>
+  </div>
+
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="screen-area">
+      <div class="scroll" id="scroll">
+
+        <!-- ============ LOGIN ============ -->
+        <div class="screen" id="s-login" style="display:none;">
+          <div style="display:flex; flex-direction:column; justify-content:center; min-height:560px;">
+            <div style="text-align:center; margin-bottom:46px;">
+              <div style="color:var(--amber); font-size:46px; font-weight:800; letter-spacing:.18em;">BP</div>
+              <div style="font-size:22px; font-weight:700; margin-top:6px;">Barber Prime</div>
+              <div style="color:var(--txt2); font-size:12px; margin-top:5px;">Gestão profissional para barbearias</div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:14px;">
+              <div><div class="label-up" style="margin-bottom:7px;">E-mail</div>
+                <div class="card" style="padding:13px 14px; color:var(--txt4); font-size:14px;">super@barberprime.com</div></div>
+              <div><div class="label-up" style="margin-bottom:7px;">Senha</div>
+                <div class="card" style="padding:13px 14px; color:var(--txt4); font-size:14px; letter-spacing:3px;">••••••••</div></div>
+            </div>
+            <div class="card" style="margin-top:14px; padding:12px 14px; background:rgba(255,255,255,.02);">
+              <div style="color:var(--txt3); font-size:11.5px; line-height:1.5;">💡 <span style="color:var(--amber)">super@…</span> (SaaS), <span style="color:var(--amber)">owner@…</span> (Dono) ou <span style="color:var(--amber)">barber@…</span> (Barbeiro).</div>
+            </div>
+            <div style="margin-top:26px; background:var(--amber); border-radius:14px; padding:15px; text-align:center;">
+              <span style="color:#09090b; font-weight:800; font-size:15px;">Entrar</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ SUPER · BARBEARIAS ============ -->
+        <div class="screen" id="s-super-shops">
+          <div class="row-between" style="margin-bottom:4px;">
+            <div class="h-title">Barbearias</div>
+            <button class="mini-btn" onclick="setRole('login')">Sair</button>
+          </div>
+          <div class="row-between" style="margin-bottom:22px;">
+            <div style="color:var(--txt2); font-size:12.5px;" id="shops-sub"></div>
+            <div style="background:var(--amber); padding:7px 13px; border-radius:10px;"><span style="color:#09090b; font-weight:800; font-size:12px;">+ Nova</span></div>
+          </div>
+          <div style="display:flex; gap:7px; overflow-x:auto; margin-bottom:22px; padding-bottom:4px;" id="shops-filters"></div>
+          <div id="shops-list"></div>
+        </div>
+
+        <!-- ============ SUPER · DETALHE (sem aba) ============ -->
+        <div class="screen" id="s-super-detail">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:22px;">
+            <span style="font-size:24px; cursor:pointer;" onclick="goScreen('shops')">‹</span>
+            <span style="font-size:17px; font-weight:600;">Detalhes</span>
+          </div>
+          <div id="detail-body"></div>
+        </div>
+
+        <!-- ============ SUPER · MÉTRICAS ============ -->
+        <div class="screen" id="s-super-metrics">
+          <div class="h-title" style="margin-bottom:22px;">Métricas</div>
+          <div class="kpi-grid" style="margin-bottom:26px;">
+            <div class="kpi"><div class="k-l">MRR</div><div class="k-v" style="color:var(--amber)">R$ 349,70</div><div class="k-d">+18%</div></div>
+            <div class="kpi"><div class="k-l">Assinantes Ativos</div><div class="k-v">3</div><div class="k-d">+1</div></div>
+            <div class="kpi"><div class="k-l">Em Trial</div><div class="k-v" style="color:var(--blue)">1</div><div class="k-d" style="color:var(--txt3)">—</div></div>
+            <div class="kpi"><div class="k-l">Churn (30d)</div><div class="k-v" style="color:var(--rose)">1</div><div class="k-d" style="color:var(--rose)">20%</div></div>
+          </div>
+          <div class="label-up" style="margin-bottom:13px;">MRR — últimos 6 meses</div>
+          <div class="card" style="padding:16px 14px 12px; margin-bottom:26px;">
+            <div class="bars">
+              <div class="bar" style="height:57%"></div><div class="bar" style="height:71%"></div>
+              <div class="bar" style="height:85%"></div><div class="bar" style="height:100%"></div>
+              <div class="bar" style="height:91%"></div><div class="bar" style="height:100%"></div>
+            </div>
+            <div class="bar-lbls"><span>Dez</span><span>Jan</span><span>Fev</span><span>Mar</span><span>Abr</span><span>Mai</span></div>
+          </div>
+          <div class="label-up" style="margin-bottom:13px;">Resumo</div>
+          <div id="metrics-summary"></div>
+        </div>
+
+        <!-- ============ SUPER · PLANOS ============ -->
+        <div class="screen" id="s-super-plans">
+          <div class="row-between" style="margin-bottom:22px;">
+            <div class="h-title">Planos</div>
+            <button class="mini-btn">+ Plano</button>
+          </div>
+          <div id="plans-list"></div>
+        </div>
+
+        <!-- ============ ADMIN · DASHBOARD ============ -->
+        <div class="screen" id="s-owner-dashboard">
+          <div class="row-between" style="align-items:flex-start; margin-bottom:26px;">
+            <div>
+              <div style="color:var(--txt2); font-size:13px;">Bem-vindo,</div>
+              <div class="h-title">Ricardo Almeida</div>
+              <div style="color:var(--amber); font-size:11px; margin-top:3px;">Barber Prime Centro</div>
+            </div>
+            <button class="mini-btn" onclick="setRole('login')">Sair</button>
+          </div>
+          <div class="label-up" style="margin-bottom:13px;">Resumo</div>
+          <div class="kpi-grid" style="margin-bottom:26px;">
+            <div class="kpi"><div class="k-l">Faturamento Hoje</div><div class="k-v">R$ 1.240</div><div class="k-d">+12%</div></div>
+            <div class="kpi"><div class="k-l">Faturamento Mês</div><div class="k-v">R$ 28.400</div><div class="k-d">+8%</div></div>
+            <div class="kpi"><div class="k-l">Agendamentos Hoje</div><div class="k-v">14</div><div class="k-d">+3</div></div>
+            <div class="kpi"><div class="k-l">Ticket Médio</div><div class="k-v">R$ 88,57</div><div class="k-d">+5%</div></div>
+          </div>
+          <div class="label-up" style="margin-bottom:13px;">Faturamento — últimos 7 dias</div>
+          <div class="card" style="padding:14px 14px 12px; margin-bottom:26px;">
+            <div class="bars">
+              <div class="bar" style="height:48%"></div><div class="bar" style="height:65%"></div>
+              <div class="bar" style="height:40%"></div><div class="bar" style="height:78%"></div>
+              <div class="bar" style="height:90%"></div><div class="bar" style="height:60%"></div>
+              <div class="bar" style="height:100%"></div>
+            </div>
+            <div class="bar-lbls"><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span></div>
+          </div>
+          <div class="label-up" style="margin-bottom:13px;">Pagamentos de hoje</div>
+          <div id="pays"></div>
+        </div>
+
+        <!-- ============ ADMIN · BARBEIROS ============ -->
+        <div class="screen" id="s-owner-barbers">
+          <div class="row-between" style="margin-bottom:26px;">
+            <div class="h-title">Barbeiros</div>
+            <div style="background:var(--amber); padding:8px 14px; border-radius:11px;"><span style="color:#09090b; font-weight:800; font-size:12px;">+ Novo</span></div>
+          </div>
+          <div id="barbers-list"></div>
+        </div>
+
+        <!-- ============ ADMIN · RELATÓRIOS ============ -->
+        <div class="screen" id="s-owner-reports">
+          <div class="h-title" style="margin-bottom:22px;">Relatórios</div>
+          <div class="card" style="display:flex; padding:4px; margin-bottom:26px;">
+            <div class="period-btn active" data-rep="7d"  onclick="setRep('7d',this)">7 dias</div>
+            <div class="period-btn" data-rep="30d" onclick="setRep('30d',this)">30 dias</div>
+            <div class="period-btn" data-rep="90d" onclick="setRep('90d',this)">90 dias</div>
+          </div>
+          <div id="rep-cards"></div>
+          <div class="card" style="margin-top:18px; height:200px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px;">
+            <div style="font-size:26px;">📈</div><div style="color:var(--txt4); font-size:12px;">Gráfico por barbeiro</div>
+          </div>
+        </div>
+
+        <!-- ============ BARBEIRO · AGENDA ============ -->
+        <div class="screen" id="s-barber-agenda">
+          <div class="row-between" style="align-items:flex-start; margin-bottom:4px;">
+            <div>
+              <div style="color:var(--txt2); font-size:13px; text-transform:capitalize;" id="today-label">sexta-feira, 30 de maio</div>
+              <div class="h-title">Felipe Souza</div>
+            </div>
+            <button class="mini-btn" onclick="setRole('login')">Sair</button>
+          </div>
+          <div style="display:flex; gap:10px; margin:20px 0 26px;">
+            <div class="kpi" style="flex:1;"><div class="k-l">Atendimentos</div><div class="k-v">2/6</div></div>
+            <div class="kpi" style="flex:1;"><div class="k-l">Faturado</div><div class="k-v" style="color:var(--amber)">R$ 140,00</div></div>
+          </div>
+          <div class="label-up" style="margin-bottom:13px;">Agenda de hoje</div>
+          <div id="agenda-list"></div>
+        </div>
+
+        <!-- ============ BARBEIRO · COMISSÕES ============ -->
+        <div class="screen" id="s-barber-commissions">
+          <div class="h-title" style="margin-bottom:3px;">Comissões</div>
+          <div style="color:var(--txt2); font-size:13px; margin-bottom:22px;">Sua taxa: <span style="color:var(--amber); font-weight:700;">40%</span></div>
+          <div class="card" style="display:flex; padding:4px; margin-bottom:26px;">
+            <div class="period-btn" data-comm="hoje"   onclick="setComm('hoje',this)">Hoje</div>
+            <div class="period-btn" data-comm="semana" onclick="setComm('semana',this)">Semana</div>
+            <div class="period-btn active" data-comm="mes" onclick="setComm('mes',this)">Mês</div>
+          </div>
+          <div style="display:flex; gap:10px; margin-bottom:26px;">
+            <div class="card" style="flex:1; padding:14px;">
+              <div style="color:var(--txt2); font-size:10.5px;">Serviços realizados</div>
+              <div id="cm-cnt" style="font-size:30px; font-weight:800; margin-top:4px;">31</div>
+            </div>
+            <div style="flex:1; padding:14px; border-radius:16px; background:var(--amber-soft); border:1px solid var(--amber-bd);">
+              <div style="color:rgba(245,158,11,.7); font-size:10.5px;">Sua comissão</div>
+              <div id="cm-val" style="font-size:22px; font-weight:800; color:var(--amber); margin-top:4px;">R$ 872,00</div>
+              <div id="cm-base" style="color:var(--txt4); font-size:10.5px; margin-top:4px;">de R$ 2.180,00</div>
+            </div>
+          </div>
+          <div class="label-up" style="margin-bottom:13px;">Histórico</div>
+          <div id="hist-list"></div>
+        </div>
+
+      </div>
+      <div class="tabbar" id="tabbar"></div>
+    </div>
+  </div>
+
+  <div class="footnote">
+    Protótipo de apresentação — dados de exemplo, fiéis às telas reais.
+    Inclui o painel <b>SaaS</b> (gestão das barbearias assinantes), além de Barbearia e Barbeiro.
+  </div>
+
+<script>
+  const fmt = c => "R$ " + (c/100).toFixed(2).replace(".",",");
+
+  // ---------- Dados ----------
+  const PAYS=[["PIX","62%","R$ 768"],["Crédito","24%","R$ 298"],["Dinheiro","14%","R$ 174"]];
+  const BARBERS=[{n:"Felipe Souza",bps:4000,atend:6,earn:"R$ 312"},{n:"Marcus Vinícius",bps:3500,atend:5,earn:"R$ 245"},{n:"André Luiz",bps:4500,atend:3,earn:"R$ 189"}];
+  const REP={
+    "7d":[["Receita total","R$ 8.640","var(--txt)"],["Comissões pagas","R$ 3.024","var(--rose)"],["Agendamentos","98","var(--txt)"],["Ticket médio","R$ 88,16","var(--emerald)"]],
+    "30d":[["Receita total","R$ 28.400","var(--txt)"],["Comissões pagas","R$ 9.940","var(--rose)"],["Agendamentos","317","var(--txt)"],["Ticket médio","R$ 89,59","var(--emerald)"]],
+    "90d":[["Receita total","R$ 82.100","var(--txt)"],["Comissões pagas","R$ 28.735","var(--rose)"],["Agendamentos","921","var(--txt)"],["Ticket médio","R$ 89,14","var(--emerald)"]],
+  };
+  const STATUS={PENDENTE:{bg:"rgba(96,165,250,.10)",c:"var(--blue)",l:"Pendente"},CONCLUIDO:{bg:"rgba(52,211,153,.10)",c:"var(--emerald)",l:"Concluído"},NOSHOW:{bg:"rgba(251,113,133,.10)",c:"var(--rose)",l:"No-show"}};
+  const APPTS=[{t:"09:00",d:60,n:"João Pereira",s:"Corte + Barba",st:"CONCLUIDO",v:9000},{t:"10:00",d:30,n:"Lucas Santos",s:"Corte",st:"CONCLUIDO",v:5000},{t:"11:00",d:30,n:"Paulo Henrique",s:"Barba",st:"PENDENTE",v:4500},{t:"13:00",d:60,n:"Carlos Melo",s:"Corte + Barba",st:"PENDENTE",v:9000},{t:"14:00",d:30,n:"Rafael Dias",s:"Corte",st:"NOSHOW",v:5000},{t:"15:00",d:60,n:"Bruno Castro",s:"Corte + Barba",st:"PENDENTE",v:9000}];
+  const COMM={hoje:{cnt:2,comm:5600,base:14000},semana:{cnt:9,comm:24800,base:62000},mes:{cnt:31,comm:87200,base:218000}};
+  const HIST=[{dt:"27/05",n:"João Pereira",s:"Corte + Barba",base:9000,comm:3600},{dt:"27/05",n:"Lucas Santos",s:"Corte",base:5000,comm:2000},{dt:"26/05",n:"Marcos Lima",s:"Corte + Barba",base:9000,comm:3600},{dt:"26/05",n:"André Faria",s:"Barba",base:4500,comm:1800},{dt:"25/05",n:"Diego Ramos",s:"Corte",base:5000,comm:2000}];
+
+  // SaaS
+  const SHOP_ST={ATIVA:{bg:"rgba(52,211,153,.10)",c:"var(--emerald)",l:"Ativa"},INADIMPLENTE:{bg:"rgba(245,158,11,.10)",c:"var(--amber)",l:"Inadimplente"},CANCELADA:{bg:"rgba(251,113,133,.10)",c:"var(--rose)",l:"Cancelada"},TRIAL:{bg:"rgba(96,165,250,.10)",c:"var(--blue)",l:"Trial"}};
+  const PAY_ST={PAGO:{c:"var(--emerald)",l:"Pago"},PENDENTE:{c:"var(--amber)",l:"Pendente"},FALHOU:{c:"var(--rose)",l:"Falhou"}};
+  const SHOPS=[
+    {id:"shop_01",name:"Barber Prime Centro",tenant:"BARBER_PRIME",plan:"Pro",status:"ATIVA",mrr:9990,barbers:4,since:"Jan/25",owner:"Ricardo Almeida",email:"owner@barberprime.com",payments:[{date:"01/05/25",amount:9990,method:"Cartão",status:"PAGO"},{date:"01/04/25",amount:9990,method:"Cartão",status:"PAGO"},{date:"01/03/25",amount:9990,method:"PIX",status:"PAGO"}]},
+    {id:"shop_02",name:"Kings Cut Pro",tenant:"KINGS_CUT",plan:"Premium",status:"ATIVA",mrr:14990,barbers:7,since:"Mar/25",owner:"Felipe Costa",email:"felipe@kingscut.com",payments:[{date:"01/05/25",amount:14990,method:"Cartão",status:"PAGO"},{date:"01/04/25",amount:14990,method:"Cartão",status:"PAGO"}]},
+    {id:"shop_03",name:"Black Lion Barber",tenant:"BLACK_LION",plan:"Pro",status:"INADIMPLENTE",mrr:9990,barbers:3,since:"Fev/25",owner:"Marcos Lima",email:"contato@blacklion.com",payments:[{date:"01/05/25",amount:9990,method:"Boleto",status:"FALHOU"},{date:"01/04/25",amount:9990,method:"Boleto",status:"PENDENTE"},{date:"01/03/25",amount:9990,method:"PIX",status:"PAGO"}]},
+    {id:"shop_04",name:"Navalha de Ouro",tenant:"BARBER_PRIME",plan:"Básico",status:"TRIAL",mrr:0,barbers:2,since:"Mai/25",owner:"Diego Ramos",email:"diego@navalhadeouro.com",payments:[]},
+    {id:"shop_05",name:"Don Corleone Cortes",tenant:"BARBER_PRIME",plan:"Pro",status:"CANCELADA",mrr:0,barbers:0,since:"Dez/24",owner:"Paulo Henrique",email:"paulo@doncorleone.com",payments:[{date:"01/02/25",amount:9990,method:"Cartão",status:"PAGO"},{date:"01/01/25",amount:9990,method:"Cartão",status:"PAGO"}]},
+  ];
+  const METRICS_SUM=[["Receita acumulada (ano)","R$ 1.766,00","var(--txt)"],["Ticket médio por loja","R$ 116,57","var(--emerald)"],["Inadimplência","R$ 99,90","var(--rose)"]];
+  const PLANS=[
+    {name:"Básico",price:4990,pop:false,subs:0,feat:["Até 2 barbeiros","Agenda e comissões","Relatórios básicos"]},
+    {name:"Pro",price:9990,pop:true,subs:3,feat:["Até 6 barbeiros","Tudo do Básico","Relatórios avançados","Suporte prioritário"]},
+    {name:"Premium",price:14990,pop:false,subs:1,feat:["Barbeiros ilimitados","Tudo do Pro","White Label próprio","Gerente de conta"]},
+  ];
+
+  const ICON={
+    business:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 21v-4h6v4M8 7h.01M12 7h.01M16 7h.01M8 11h.01M12 11h.01M16 11h.01"/></svg>',
+    trend:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 7-7"/><path d="M14 8h6v6"/></svg>',
+    tags:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v5l8 8 6-6-8-8H4z"/><circle cx="7" cy="11" r="1.3" fill="currentColor" stroke="none"/></svg>',
+    stats:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 4-5"/></svg>',
+    people:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><path d="M16 6a3 3 0 0 1 0 6"/><path d="M17.5 20a5 5 0 0 0-2.5-4.3"/></svg>',
+    bar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="11" width="3.5" height="9" rx="1"/><rect x="10" y="6" width="3.5" height="14" rx="1"/><rect x="16" y="14" width="3.5" height="6" rx="1"/></svg>',
+    cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg>',
+    wallet:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18"/><circle cx="16.5" cy="13.5" r="1.3" fill="currentColor" stroke="none"/></svg>',
+  };
+
+  const SCREENS={
+    login:[{id:"login",t:"Login"}],
+    super:[{id:"shops",t:"Barbearias",icon:"business"},{id:"metrics",t:"Métricas",icon:"trend"},{id:"plans",t:"Planos",icon:"tags"}],
+    owner:[{id:"dashboard",t:"Dashboard",icon:"stats"},{id:"barbers",t:"Barbeiros",icon:"people"},{id:"reports",t:"Relatórios",icon:"bar"}],
+    barber:[{id:"agenda",t:"Agenda",icon:"cal"},{id:"commissions",t:"Comissões",icon:"wallet"}],
+  };
+
+  let role="super", current="shops", shopFilter="TODAS", detailId=null;
+
+  // ---------- Renders SaaS ----------
+  function renderShops(){
+    const active=SHOPS.filter(s=>s.status==="ATIVA").length;
+    document.getElementById("shops-sub").textContent=`${SHOPS.length} assinantes · ${active} ativas`;
+    const FILTERS=["TODAS","ATIVA","INADIMPLENTE","TRIAL","CANCELADA"];
+    document.getElementById("shops-filters").innerHTML=FILTERS.map(f=>{
+      const lbl=f==="TODAS"?"Todas":(SHOP_ST[f]?.l||f);
+      return `<div class="chip ${shopFilter===f?'on':'off'}" onclick="setShopFilter('${f}')">${lbl}</div>`;
+    }).join("");
+    const list=shopFilter==="TODAS"?SHOPS:SHOPS.filter(s=>s.status===shopFilter);
+    document.getElementById("shops-list").innerHTML=list.map(shop=>{
+      const s=SHOP_ST[shop.status];
+      return `<div class="card" style="padding:15px 18px; margin-bottom:11px; cursor:pointer;" onclick="openDetail('${shop.id}')">
+        <div class="row-between" style="align-items:flex-start;">
+          <div style="flex:1;"><div style="font-weight:600;">${shop.name}</div><div style="color:var(--txt4); font-size:11px; margin-top:2px;">${shop.tenant} · Plano ${shop.plan}</div></div>
+          <span class="pill" style="background:${s.bg}; color:${s.c};">${s.l}</span>
+        </div>
+        <div class="row-between" style="margin-top:14px; padding-top:14px; border-top:1px solid var(--border);">
+          <div><div style="color:var(--txt3); font-size:10.5px;">MRR</div><div style="color:var(--amber); font-weight:700;">${shop.mrr>0?fmt(shop.mrr):"—"}</div></div>
+          <div style="text-align:center;"><div style="color:var(--txt3); font-size:10.5px;">Barbeiros</div><div style="font-weight:700;">${shop.barbers}</div></div>
+          <div style="text-align:right;"><div style="color:var(--txt3); font-size:10.5px;">Desde</div><div style="font-weight:700;">${shop.since}</div></div>
+        </div>
+      </div>`;
+    }).join("");
+  }
+  function setShopFilter(f){ shopFilter=f; renderShops(); }
+
+  function openDetail(id){ detailId=id; current="detail"; renderScreenRow(); renderTabbar(); renderDetail(); show(); }
+  function renderDetail(){
+    const shop=SHOPS.find(s=>s.id===detailId); if(!shop) return;
+    const s=SHOP_ST[shop.status];
+    const cancelled=shop.status==="CANCELADA";
+    const pays=shop.payments.length? shop.payments.map(p=>{
+      const ps=PAY_ST[p.status];
+      return `<div class="card row-between" style="padding:14px 16px; margin-bottom:8px;"><div><div style="font-weight:500;">${fmt(p.amount)}</div><div style="color:var(--txt4); font-size:11px; margin-top:2px;">${p.method} · ${p.date}</div></div><span style="color:${ps.c}; font-size:11.5px; font-weight:700;">${ps.l}</span></div>`;
+    }).join("") : `<div class="card" style="padding:22px; text-align:center; color:var(--txt4); font-size:13px;">Nenhum pagamento registrado.</div>`;
+
+    document.getElementById("detail-body").innerHTML=`
+      <div class="card" style="padding:18px; margin-bottom:22px;">
+        <div class="row-between" style="align-items:flex-start;">
+          <div style="flex:1;"><div style="font-size:19px; font-weight:800;">${shop.name}</div><div style="color:var(--txt4); font-size:11px; margin-top:3px;">${shop.tenant} · Plano ${shop.plan}</div></div>
+          <span class="pill" style="background:${s.bg}; color:${s.c};">${s.l}</span>
+        </div>
+        <div class="row-between" style="margin-top:18px; padding-top:18px; border-top:1px solid var(--border);">
+          <div><div style="color:var(--txt3); font-size:10.5px;">MRR</div><div style="color:var(--amber); font-weight:700; margin-top:2px;">${shop.mrr>0&&!cancelled?fmt(shop.mrr):"—"}</div></div>
+          <div style="text-align:center;"><div style="color:var(--txt3); font-size:10.5px;">Barbeiros</div><div style="font-weight:700; margin-top:2px;">${shop.barbers}</div></div>
+          <div style="text-align:right;"><div style="color:var(--txt3); font-size:10.5px;">Desde</div><div style="font-weight:700; margin-top:2px;">${shop.since}</div></div>
+        </div>
+      </div>
+      <div class="label-up" style="margin-bottom:11px;">Responsável</div>
+      <div class="card" style="padding:15px 18px; margin-bottom:22px;"><div style="font-weight:500;">${shop.owner}</div><div style="color:var(--txt4); font-size:11px; margin-top:2px;">${shop.email}</div></div>
+      <div class="label-up" style="margin-bottom:11px;">Histórico de pagamentos</div>
+      <div style="margin-bottom:22px;">${pays}</div>
+      <button class="action-btn" style="${cancelled?'background:#10b981; color:#04150e;':'background:rgba(244,63,94,.9); color:#fff;'}" onclick="toggleAccess()">
+        ${cancelled?"Reativar acesso":"Suspender acesso"}
+      </button>`;
+  }
+  function toggleAccess(){
+    const shop=SHOPS.find(s=>s.id===detailId); if(!shop) return;
+    shop.status = shop.status==="CANCELADA" ? "ATIVA" : "CANCELADA";
+    renderDetail(); renderShops();
+  }
+
+  function renderMetricsSummary(){
+    document.getElementById("metrics-summary").innerHTML=METRICS_SUM.map(([l,v,c])=>`<div class="card row-between" style="padding:14px 18px; margin-bottom:10px;"><span style="color:var(--txt2); font-size:13px;">${l}</span><span style="font-size:16px; font-weight:700; color:${c};">${v}</span></div>`).join("");
+  }
+  function renderPlans(){
+    document.getElementById("plans-list").innerHTML=PLANS.map(p=>`
+      <div style="border-radius:16px; padding:18px; margin-bottom:14px; ${p.pop?'background:rgba(245,158,11,.05); border:1px solid var(--amber-bd);':'background:var(--surface2); border:1px solid var(--border);'}">
+        <div class="row-between" style="align-items:flex-start; margin-bottom:13px;">
+          <div><div style="display:flex; align-items:center; gap:8px;"><span style="font-size:17px; font-weight:800;">${p.name}</span>${p.pop?'<span style="background:var(--amber); color:#09090b; font-size:9px; font-weight:800; padding:2px 7px; border-radius:6px;">POPULAR</span>':''}</div><div style="color:var(--txt4); font-size:11px; margin-top:4px;">${p.subs} assinante(s)</div></div>
+          <div style="text-align:right;"><div style="color:var(--amber); font-size:19px; font-weight:800;">${fmt(p.price)}</div><div style="color:var(--txt4); font-size:11px;">/mês</div></div>
+        </div>
+        <div style="padding-top:13px; border-top:1px solid var(--border); display:flex; flex-direction:column; gap:8px;">
+          ${p.feat.map(f=>`<div style="display:flex; align-items:center; gap:8px;"><span style="color:var(--amber); font-size:13px;">✓</span><span style="color:var(--txt2); font-size:13px;">${f}</span></div>`).join("")}
+        </div>
+      </div>`).join("");
+  }
+
+  // ---------- Renders (admin/barber) ----------
+  function renderPays(){ document.getElementById("pays").innerHTML=PAYS.map(([m,p,a])=>`<div class="card row-between" style="padding:13px 15px; margin-bottom:9px;"><span style="font-weight:500;">${m}</span><span style="display:flex; align-items:center; gap:13px;"><span style="color:var(--txt2); font-size:13px;">${p}</span><span style="color:var(--amber); font-weight:700;">${a}</span></span></div>`).join(""); }
+  function renderBarbers(){ document.getElementById("barbers-list").innerHTML=BARBERS.map(b=>`<div class="card" style="padding:15px; margin-bottom:11px;"><div style="display:flex; align-items:center; gap:13px;"><div class="avatar">${b.n.charAt(0)}</div><div style="flex:1;"><div style="font-weight:600;">${b.n}</div><div style="color:var(--txt2); font-size:11px; margin-top:2px;">Comissão: ${b.bps/100}%</div></div></div><div class="row-between" style="margin-top:14px; padding-top:14px; border-top:1px solid var(--border);"><div><div style="color:var(--txt3); font-size:10.5px;">Atend. hoje</div><div style="font-weight:700;">${b.atend}</div></div><div style="text-align:right;"><div style="color:var(--txt3); font-size:10.5px;">Comissão hoje</div><div style="color:var(--amber); font-weight:700;">${b.earn}</div></div></div></div>`).join(""); }
+  function setRep(p,btn){ document.querySelectorAll("[data-rep]").forEach(b=>b.classList.remove("active")); if(btn)btn.classList.add("active"); document.getElementById("rep-cards").innerHTML=REP[p].map(([l,v,c])=>`<div class="card row-between" style="padding:14px 16px; margin-bottom:10px;"><span style="color:var(--txt2); font-size:13px;">${l}</span><span style="font-size:16px; font-weight:700; color:${c};">${v}</span></div>`).join(""); }
+  function renderAgenda(){ document.getElementById("agenda-list").innerHTML=APPTS.map(a=>{const s=STATUS[a.st]; return `<div class="card" style="padding:14px; margin-bottom:11px;"><div class="row-between" style="align-items:flex-start;"><div style="display:flex; gap:13px;"><div style="width:44px; text-align:center;"><div style="color:var(--amber); font-weight:700;">${a.t}</div><div style="color:var(--txt4); font-size:10px;">${a.d}min</div></div><div><div style="font-weight:600;">${a.n}</div><div style="color:var(--txt2); font-size:11px; margin-top:2px;">${a.s}</div></div></div><span class="pill" style="background:${s.bg}; color:${s.c};">${s.l}</span></div><div style="display:flex; justify-content:flex-end; margin-top:12px; padding-top:12px; border-top:1px solid var(--border);"><span style="color:var(--txt3); font-size:11px;">Valor: </span><span style="font-size:11px; font-weight:600; margin-left:3px;">${fmt(a.v)}</span></div></div>`;}).join(""); }
+  function setComm(p,btn){ document.querySelectorAll("[data-comm]").forEach(b=>b.classList.remove("active")); if(btn)btn.classList.add("active"); const d=COMM[p]; document.getElementById("cm-cnt").textContent=d.cnt; document.getElementById("cm-val").textContent=fmt(d.comm); document.getElementById("cm-base").textContent="de "+fmt(d.base); }
+  function renderHist(){ document.getElementById("hist-list").innerHTML=HIST.map(h=>`<div class="card row-between" style="padding:13px 15px; margin-bottom:9px;"><div><div style="font-weight:500;">${h.n}</div><div style="color:var(--txt4); font-size:11px;">${h.s} · ${h.dt}</div></div><div style="text-align:right;"><div style="color:var(--amber); font-weight:700;">${fmt(h.comm)}</div><div style="color:var(--txt4); font-size:11px;">${fmt(h.base)}</div></div></div>`).join(""); }
+
+  // ---------- Navegação ----------
+  function setRole(r){
+    role=r;
+    ["login","super","owner","barber"].forEach(x=>document.getElementById("rb-"+x).classList.remove("on-login","on-super","on-owner","on-barber"));
+    document.getElementById("rb-"+r).classList.add("on-"+r);
+    current=SCREENS[r][0].id; detailId=null;
+    renderScreenRow(); renderTabbar(); show();
+  }
+  function renderScreenRow(){
+    const row=document.getElementById("screen-row");
+    if(role==="login"){ row.innerHTML=""; return; }
+    const cls = role==="barber"?"active-blue":(role==="super"?"active-green":"active");
+    row.innerHTML=SCREENS[role].map(s=>`<button class="nav-btn ${s.id===current?cls:''}" onclick="goScreen('${s.id}',this)">${s.t}</button>`).join("");
+  }
+  function goScreen(id){ current=id; if(id!=="detail")detailId=null; renderScreenRow(); renderTabbar(); show(); }
+  function renderTabbar(){
+    const bar=document.getElementById("tabbar");
+    if(role==="login"){ bar.style.display="none"; return; }
+    bar.style.display="flex";
+    bar.innerHTML=SCREENS[role].map(s=>{
+      const active = s.id===current || (current==="detail" && s.id==="shops");
+      return `<div class="${active?'tab amber':'tab dim'}" onclick="goScreen('${s.id}')">${ICON[s.icon]}<span>${s.t}</span></div>`;
+    }).join("");
+  }
+  function show(){
+    document.querySelectorAll(".screen").forEach(el=>{ el.classList.remove("active"); if(el.id!=="s-login") el.style.display="none"; });
+    let target;
+    if(role==="login"){ target=document.getElementById("s-login"); target.style.display="block"; }
+    else if(role==="super" && current==="detail"){ target=document.getElementById("s-super-detail"); target.style.display="block"; }
+    else if(role==="super"){ target=document.getElementById("s-super-"+current); target.style.display="block"; }
+    else { target=document.getElementById("s-"+role+"-"+current); target.style.display="block"; }
+    target.classList.add("active");
+    document.getElementById("scroll").scrollTop=0;
+  }
+
+  // ---------- Init ----------
+  renderPays(); renderBarbers(); setRep("7d",document.querySelector('[data-rep="7d"]'));
+  renderAgenda(); setComm("mes",document.querySelector('[data-comm="mes"]')); renderHist();
+  renderShops(); renderMetricsSummary(); renderPlans();
+  document.getElementById("today-label").textContent=new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"});
+  setRole("super");
+</script>
+</body>
+</html>
